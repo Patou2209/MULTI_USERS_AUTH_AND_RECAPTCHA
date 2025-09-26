@@ -66,6 +66,7 @@
       const email = document.getElementById("email").value.trim(); // <-- ID correct
       const password = document.getElementById("password").value.trim(); // <-- ID correct
       const message = document.getElementById("message");
+      
 
       if (!email || !password) {
         message.textContent = "Veuillez remplir tous les champs.";
@@ -88,33 +89,47 @@
 
 
     // Inscription
-    document.getElementById("signup-btn").addEventListener("click", () => {
-      const email = document.getElementById("signup-email").value.trim();
-      const password = document.getElementById("signup-password").value.trim();
-      const message = document.getElementById("signup-message");
+document.getElementById("signup-btn").addEventListener("click", (event) => {
+  event.preventDefault(); // Empêche l'envoi auto
 
-      if (!email || !password) {
-        message.textContent = "Veuillez remplir tous les champs.";
-        return;
-      }
+  const email = document.getElementById("signup-email").value.trim();
+  const password = document.getElementById("signup-password").value.trim();
+  const message = document.getElementById("signup-message");
 
-      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailPattern.test(email)) {
-      message.textContent = "Adresse email invalide.";
-      return;
-    }
+  // Vérifier que le captcha est validé
+  const captchaResponse = grecaptcha.getResponse();
+  if (!captchaResponse) {
+    message.style.color = "red";
+    message.textContent = "Veuillez cocher le reCAPTCHA.";
+    return;
+  }
 
+  if (!email || !password) {
+    message.textContent = "Veuillez remplir tous les champs.";
+    return;
+  }
 
-      createUserWithEmailAndPassword(auth, email, password)
-        .then(() => {
-          message.style.color = "green";
-          message.textContent = "Inscription réussie. Vous pouvez vous connecter.";
-        })
-        .catch(error => {
-          message.style.color = "red";
-          message.textContent = "Erreur : " + error.message;
-        });
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailPattern.test(email)) {
+    message.textContent = "Adresse email invalide.";
+    return;
+  }
+
+  createUserWithEmailAndPassword(auth, email, password)
+    .then(() => {
+      message.style.color = "green";
+      message.textContent = "Inscription réussie. Vous pouvez vous connecter.";
+      grecaptcha.reset(); // 🔄 Réinitialiser le captcha après succès
+      document.getElementById("signup-email").value = ""; // Réinitialiser les champs
+      document.getElementById("signup-password").value = ""; // Réinitialiser les champs
+
+    })
+    .catch(error => {
+      message.style.color = "red";
+      message.textContent = "Erreur : " + error.message;
     });
+});
+
   </script>
 
 </body>
